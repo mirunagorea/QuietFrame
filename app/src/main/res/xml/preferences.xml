@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="pref_image_format"
+        android:title="Image Format"
+        android:summary="Select the preferred image format for downloads"
+        android:entries="@array/image_format_entries"
+        android:entryValues="@array/image_format_values"
+        android:defaultValue="jpg" />
+</PreferenceScreen>

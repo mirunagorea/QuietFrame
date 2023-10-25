@@ -1,0 +1,2 @@
+ninja: Entering directory `D:\LICENTA\QuietFrame\openCV\.cxx\Debug\4a1e556r\x86_64'
+ninja: no work to do.

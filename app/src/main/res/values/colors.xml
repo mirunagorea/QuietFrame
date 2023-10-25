@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="tiffany_blue">#76c2c8</color>
+    <color name="light_tiffany_blue">#DCF4F6</color>
+    <color name="gummetal">#0d2836</color>
+    <color name="rich_black">#010413</color>
+    <color name="midnight_green">#1d4550</color>
+
+    <color name="color_primary">#113243</color>
+    <color name="color_primary_dark">#0A1E29</color>
+    <color name="color_primary_light">#184A63</color>
+
+
+</resources>
