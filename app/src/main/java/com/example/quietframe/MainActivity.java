@@ -1,4 +1,5 @@
 package com.example.quietframe;
+import android.content.Context;
 import android.content.Intent;
 import android.database.CursorWindow;
 import android.net.Uri;
@@ -13,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.chaquo.python.android.AndroidPlatform;
 import com.example.quietframe.fragments.HomeFragment;
 import com.example.quietframe.fragments.ProfileFragment;
 import com.example.quietframe.fragments.SearchFragment;
@@ -24,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import com.chaquo.python.Python;
 
 public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
@@ -45,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Context context = this;
+        if (!Python.isStarted()) {
+            Python.start(new AndroidPlatform(context));
+        }
         try {
             Field field = CursorWindow.class.getDeclaredField("sCursorWindowSize");
             field.setAccessible(true);

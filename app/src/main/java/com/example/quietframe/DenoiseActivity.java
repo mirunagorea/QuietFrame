@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,9 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
+
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
 
 import org.opencv.android.OpenCVLoader;
 import org.pytorch.IValue;
@@ -53,6 +57,7 @@ import java.util.Objects;
 public class DenoiseActivity extends AppCompatActivity {
     private SeekBar seekBar;
     private byte[] denoisedPhotoData;
+    private byte[] denoisedPhotoData3;
     private ImageView imageView1;
     private ImageView imageView2;
     private ImageView imageView3;
@@ -74,6 +79,8 @@ public class DenoiseActivity extends AppCompatActivity {
     private static String TAG = "DenoiseActivity";
 
     private int selectedImageFormat = 0;
+
+    private String imageString = "";
 
     static {
         if (OpenCVLoader.initDebug()) {
@@ -125,9 +132,15 @@ public class DenoiseActivity extends AppCompatActivity {
                 PhotoEntity photoEntity = photoDao.getByPhotoId(photoId);
                 Log.e("POZA ADAUGATA", String.valueOf(photoEntity.getPhotoData()));
                 byte[] imageData = photoEntity.getPhotoData();
+//                for (int i = 0; i < 20; i++) {
+//                    Log.d("imageDataArrayValue", "Index" + i + ": " + String.valueOf(imageData[i]));
+//                }
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
                 int width = bitmap.getWidth();
                 int height = bitmap.getHeight();
+                Log.e("!!!!imageData.length", String.valueOf(imageData.length));
+                Log.e("!!!!width", String.valueOf(width));
+                Log.e("!!!!height", String.valueOf(height));
                 Tensor imageTensor = byteArrayToTensor(imageData);
                 new Thread(new Runnable() {
                     @Override
@@ -144,7 +157,22 @@ public class DenoiseActivity extends AppCompatActivity {
                         });
                     }
                 }).start();
+
                 denoisedPhotoData = Denoising.nonLocalMeansDenoising(photoEntity.getPhotoData());
+
+                imageString = getStringImage(photoEntity.getPhotoData());
+                final Python py = Python.getInstance();
+                PyObject pyo = py.getModule("total_variation");
+                PyObject obj = pyo.callAttr("total_variation", imageString);
+                String str = obj.toString();
+                byte data3[] = android.util.Base64.decode(str, Base64.DEFAULT);
+                Bitmap bmp3 = BitmapFactory.decodeByteArray(data3, 0, data3.length);
+                denoisedPhotoData3 = Denoising.medianFilterDenoising(photoEntity.getPhotoData(), 10);
+
+                PyObject obj2 = pyo.callAttr("wavelet_denoising", imageString);
+                String str2 = obj2.toString();
+                byte data4[]=android.util.Base64.decode(str2, Base64.DEFAULT);
+                Bitmap bmp4 = BitmapFactory.decodeByteArray(data4, 0, data4.length);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -159,6 +187,9 @@ public class DenoiseActivity extends AppCompatActivity {
                         otherEditsCardView.setVisibility(View.VISIBLE);
                         seekBar.setVisibility(View.VISIBLE);
                         loadingProgressBar.setVisibility(View.GONE);
+//                        Bitmap bitmap3 = BitmapFactory.decodeByteArray(denoisedPhotoData3, 0, denoisedPhotoData3.length);
+                        imageView3.setImageBitmap(bmp3);
+                        imageView4.setImageBitmap(bmp4);
                     }
                 });
                 photoEntity.setId(photoId);
@@ -254,6 +285,11 @@ public class DenoiseActivity extends AppCompatActivity {
         });
     }
 
+    private String getStringImage(byte[] photoData) {
+        String encodedImage = android.util.Base64.encodeToString(photoData, Base64.DEFAULT);
+        return encodedImage;
+    }
+
     private void toggleCardViewVisibility() {
         isCardViewOpen = !isCardViewOpen;
         int targetHeight = isCardViewOpen ? getResources().getDimensionPixelSize(R.dimen.card_view_opened_height) : getResources().getDimensionPixelSize(R.dimen.card_view_closed_height);
@@ -298,9 +334,9 @@ public class DenoiseActivity extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
         Tensor inputTensor = normalizeImage(bitmap);
         long[] tensorShape = inputTensor.shape();
-        for (long dimension : tensorShape) {
-            Log.d("TensorShape", Long.toString(dimension));
-        }
+//        for (long dimension : tensorShape) {
+//            Log.d("TensorShape", Long.toString(dimension));
+//        }
         return inputTensor;
     }
 
@@ -335,9 +371,9 @@ public class DenoiseActivity extends AppCompatActivity {
         for (int i = 0; i < outputArr.length; i++) {
             outputArr[i] = Math.min(255, Math.max(0, outputArr[i]));
         }
-        for (int i = 0; i < 100; i++) {
-            Log.d("OutputArrayValue", "Index" + i + ": " + outputArr[i]);
-        }
+//        for (int i = 0; i < 100; i++) {
+//            Log.d("OutputArrayValue", "Index" + i + ": " + outputArr[i]);
+//        }
         return outputArr;
     }
 

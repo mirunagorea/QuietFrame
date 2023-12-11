@@ -3,6 +3,6 @@
 3    package="org.opencv" >
 4
 5    <uses-sdk android:minSdkVersion="24" />
-5-->D:\LICENTA\QuietFrame\openCV\java\AndroidManifest.xml
+5-->D:\LICENTA\QuietFrameGit\QuietFrame\openCV\java\AndroidManifest.xml
 6
 7</manifest>
