@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                                 public void run() {
                                     Log.e("MAIN PHOTO ID", String.valueOf(photoId));
                                     Toast.makeText(MainActivity.this, "Photo added successfully", Toast.LENGTH_LONG).show();
-                                    Intent intent = new Intent(MainActivity.this, DenoiseActivity.class);
+                                    Intent intent = new Intent(MainActivity.this, SetPhotoName.class);
                                     intent.putExtra("ID", photoId);
                                     startActivity(intent);
                                 }
@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 galleryLauncher.launch("image/*");
-
             }
         });
     }

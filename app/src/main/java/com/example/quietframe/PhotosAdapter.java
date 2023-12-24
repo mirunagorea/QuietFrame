@@ -36,8 +36,8 @@ public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.PhotoViewH
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
         PhotoEntity currentPhotoItem = photoItems.get(holder.getAdapterPosition());
 
-        if (currentPhotoItem.getDenoisedPhotoData() != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(currentPhotoItem.getDenoisedPhotoData(), 0, currentPhotoItem.getDenoisedPhotoData().length);
+        if (currentPhotoItem.getDenoisedPhotoDataCNN() != null) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(currentPhotoItem.getDenoisedPhotoDataCNN(), 0, currentPhotoItem.getDenoisedPhotoDataCNN().length);
             holder.getImageViewPhoto().setImageBitmap(bitmap);
         }
 

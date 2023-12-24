@@ -1,0 +1,9 @@
+# C/C++ build system timings
+generate_cxx_metadata
+  [gap of 40ms]
+  create-invalidation-state 111ms
+  [gap of 210ms]
+  write-metadata-json-to-file 70ms
+  [gap of 77ms]
+generate_cxx_metadata completed in 508ms
+

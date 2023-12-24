@@ -12,7 +12,7 @@
         android:id="@+id/imageViewAfter"
         android:layout_width="350dp"
         android:layout_height="300dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:src="@drawable/denoised_img"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,7 +22,7 @@
         android:id="@+id/frameLayout"
         android:layout_width="175dp"
         android:layout_height="300dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:minWidth="2dp"
         app:layout_constraintStart_toStartOf="@id/imageViewAfter"
         app:layout_constraintTop_toTopOf="parent">
@@ -83,7 +83,6 @@
         android:id="@+id/cardViewOtherEdits"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:layout_marginTop="32dp"
         app:cardCornerRadius="18dp"
         app:cardElevation="10dp"
         app:contentPadding="12dp"
@@ -132,48 +131,100 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <ImageView
-                android:id="@+id/imgView1"
-                android:layout_width="140dp"
-                android:layout_height="100dp"
+                android:id="@+id/imgViewCNN"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
                 android:layout_marginTop="16dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/denoised_img"
-                app:layout_constraintEnd_toStartOf="@+id/imgView3"
+                app:layout_constraintEnd_toStartOf="@+id/imgViewTV"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/toggleBtn" />
 
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Neural Network"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/imgViewTV"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imgViewCNN" />
+
             <ImageView
-                android:id="@+id/imgView2"
-                android:layout_width="140dp"
-                android:layout_height="100dp"
+                android:id="@+id/imgViewNLM"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
                 android:layout_marginTop="16dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/denoised_img"
-                app:layout_constraintEnd_toStartOf="@+id/imgView4"
+                app:layout_constraintEnd_toStartOf="@+id/imgViewWavelet"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imgView1" />
+                app:layout_constraintTop_toBottomOf="@+id/textView1" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Non Local Means"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/imgViewWavelet"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imgViewNLM" />
 
             <ImageView
-                android:id="@+id/imgView3"
-                android:layout_width="140dp"
-                android:layout_height="100dp"
+                android:id="@+id/imgViewTV"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
                 android:layout_marginTop="16dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/denoised_img"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imgView1"
+                app:layout_constraintStart_toEndOf="@+id/imgViewCNN"
                 app:layout_constraintTop_toBottomOf="@id/toggleBtn" />
 
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Total Variation"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgViewCNN"
+                app:layout_constraintTop_toBottomOf="@id/imgViewTV" />
+
             <ImageView
-                android:id="@+id/imgView4"
-                android:layout_width="140dp"
-                android:layout_height="100dp"
+                android:id="@+id/imgViewWavelet"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
                 android:layout_marginTop="16dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/denoised_img"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/imgView2"
-                app:layout_constraintTop_toBottomOf="@+id/imgView3" />
+                app:layout_constraintStart_toEndOf="@+id/imgViewNLM"
+                app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Wavelet Denoising"
+                android:textColor="@color/color_primary_dark"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/imgViewNLM"
+                app:layout_constraintTop_toBottomOf="@id/imgViewWavelet" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

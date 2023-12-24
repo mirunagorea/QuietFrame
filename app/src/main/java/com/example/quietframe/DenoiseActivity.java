@@ -47,6 +47,7 @@ import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,12 +57,14 @@ import java.util.Objects;
 
 public class DenoiseActivity extends AppCompatActivity {
     private SeekBar seekBar;
-    private byte[] denoisedPhotoData;
-    private byte[] denoisedPhotoData3;
-    private ImageView imageView1;
-    private ImageView imageView2;
-    private ImageView imageView3;
-    private ImageView imageView4;
+    private byte[] denoisedPhotoDataCNN;
+    private byte[] denoisedPhotoDataNLM;
+    private byte[] denoisedPhotoDataTV;
+    private byte[] denoisedPhotoDataWavelet;
+    private ImageView imageViewCNN;
+    private ImageView imageViewNLM;
+    private ImageView imageViewTV;
+    private ImageView imageViewWavelet;
     private ImageView imageViewBefore;
     private ImageView imageViewAfter;
     private Button downloadButton;
@@ -81,6 +84,8 @@ public class DenoiseActivity extends AppCompatActivity {
     private int selectedImageFormat = 0;
 
     private String imageString = "";
+    private Bitmap outputBitmap;
+    private long photoId;
 
     static {
         if (OpenCVLoader.initDebug()) {
@@ -94,10 +99,10 @@ public class DenoiseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_denoise);
-        imageView1 = findViewById(R.id.imgView1);
-        imageView2 = findViewById(R.id.imgView2);
-        imageView3 = findViewById(R.id.imgView3);
-        imageView4 = findViewById(R.id.imgView4);
+        imageViewCNN = findViewById(R.id.imgViewCNN);
+        imageViewNLM = findViewById(R.id.imgViewNLM);
+        imageViewTV = findViewById(R.id.imgViewTV);
+        imageViewWavelet = findViewById(R.id.imgViewWavelet);
         imageViewBefore = findViewById(R.id.imageViewBefore);
         imageViewAfter = findViewById(R.id.imageViewAfter);
         downloadButton = findViewById(R.id.buttonSave);
@@ -121,7 +126,7 @@ public class DenoiseActivity extends AppCompatActivity {
             Log.e(TAG, "Unable to load model", e);
         }
 
-        long photoId = getIntent().getExtras().getLong("ID");
+        photoId = getIntent().getExtras().getLong("ID");
         if (photoId == 0) Log.e("PHOTOID", "Nu s-a pus id extra");
         else Log.e("PHOTOID", String.valueOf(photoId));
         MyDatabase myDatabase = MyDatabase.getDatabase(this);
@@ -148,39 +153,41 @@ public class DenoiseActivity extends AppCompatActivity {
                         Tensor outputTensor = module.forward(IValue.from(imageTensor)).toTensor();
                         float[] outputArr = outputTensor.getDataAsFloatArray();
                         float[] processedArray = postProcessOutput(outputArr, height, width);
-                        Bitmap outputBitmap = createBitmapFromProcessedArray(processedArray, height, width);
+                        outputBitmap = createBitmapFromProcessedArray(processedArray, height, width);
+                        denoisedPhotoDataCNN = bitmapToByteArray(outputBitmap);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                imageView2.setImageBitmap(outputBitmap);
+                                imageViewCNN.setImageBitmap(outputBitmap);
                             }
                         });
                     }
                 }).start();
 
-                denoisedPhotoData = Denoising.nonLocalMeansDenoising(photoEntity.getPhotoData());
+                denoisedPhotoDataNLM = Denoising.nonLocalMeansDenoising(photoEntity.getPhotoData());
+                Bitmap bmpNLM = BitmapFactory.decodeByteArray(denoisedPhotoDataNLM, 0, denoisedPhotoDataNLM.length);
 
                 imageString = getStringImage(photoEntity.getPhotoData());
                 final Python py = Python.getInstance();
                 PyObject pyo = py.getModule("total_variation");
                 PyObject obj = pyo.callAttr("total_variation", imageString);
                 String str = obj.toString();
-                byte data3[] = android.util.Base64.decode(str, Base64.DEFAULT);
-                Bitmap bmp3 = BitmapFactory.decodeByteArray(data3, 0, data3.length);
-                denoisedPhotoData3 = Denoising.medianFilterDenoising(photoEntity.getPhotoData(), 10);
+                byte dataTV[] = Base64.decode(str, Base64.DEFAULT);
+                Bitmap bmpTV = BitmapFactory.decodeByteArray(dataTV, 0, dataTV.length);
+//                denoisedPhotoDataTV = Denoising.medianFilterDenoising(photoEntity.getPhotoData(), 10);
+                denoisedPhotoDataTV = bitmapToByteArray(bmpTV);
 
-                PyObject obj2 = pyo.callAttr("wavelet_denoising", imageString);
-                String str2 = obj2.toString();
-                byte data4[]=android.util.Base64.decode(str2, Base64.DEFAULT);
-                Bitmap bmp4 = BitmapFactory.decodeByteArray(data4, 0, data4.length);
+                PyObject objWavelet = pyo.callAttr("wavelet_denoising", imageString);
+                String strWavelet = objWavelet.toString();
+                byte dataWavelet[]= Base64.decode(strWavelet, Base64.DEFAULT);
+                Bitmap bmpWavelet = BitmapFactory.decodeByteArray(dataWavelet, 0, dataWavelet.length);
+                denoisedPhotoDataWavelet = bitmapToByteArray(bmpWavelet);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         imageViewBefore.setImageBitmap(BitmapFactory.decodeByteArray(photoEntity.getPhotoData(), 0, photoEntity.getPhotoData().length));
-                        imageViewAfter.setImageBitmap(BitmapFactory.decodeByteArray(denoisedPhotoData, 0, denoisedPhotoData.length));
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(denoisedPhotoData, 0, denoisedPhotoData.length);
-                        imageView1.setImageBitmap(bitmap);
-                        imageViewAfter.setImageBitmap(bitmap);
+                        imageViewAfter.setImageBitmap(outputBitmap);
+                        imageViewCNN.setImageBitmap(outputBitmap);
                         downloadButton.setVisibility(View.VISIBLE);
                         imageViewAfter.setVisibility(View.VISIBLE);
                         frameLayout.setVisibility(View.VISIBLE);
@@ -188,14 +195,18 @@ public class DenoiseActivity extends AppCompatActivity {
                         seekBar.setVisibility(View.VISIBLE);
                         loadingProgressBar.setVisibility(View.GONE);
 //                        Bitmap bitmap3 = BitmapFactory.decodeByteArray(denoisedPhotoData3, 0, denoisedPhotoData3.length);
-                        imageView3.setImageBitmap(bmp3);
-                        imageView4.setImageBitmap(bmp4);
+                        imageViewTV.setImageBitmap(bmpTV);
+                        imageViewWavelet.setImageBitmap(bmpWavelet);
+                        imageViewNLM.setImageBitmap((bmpNLM));
                     }
                 });
                 photoEntity.setId(photoId);
                 photoEntity.setUserId(photoEntity.getUserId());
                 photoEntity.setPhotoData(photoEntity.getPhotoData());
-                photoEntity.setDenoisedPhotoData(denoisedPhotoData);
+                photoEntity.setDenoisedPhotoDataNLM(denoisedPhotoDataNLM);
+                photoEntity.setDenoisedPhotoDataCNN(denoisedPhotoDataCNN);
+                photoEntity.setDenoisedPhotoDataTV(denoisedPhotoDataTV);
+                photoEntity.setDenoisedPhotoDataWavelet(denoisedPhotoDataWavelet);
                 photoDao.update(photoEntity);
             }
         }).start();
@@ -256,33 +267,39 @@ public class DenoiseActivity extends AppCompatActivity {
             }
         });
 
-        imageView1.setOnClickListener(new View.OnClickListener() {
+        imageViewCNN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageViewAfter.setImageDrawable(imageView1.getDrawable());
+                imageViewAfter.setImageDrawable(imageViewCNN.getDrawable());
             }
         });
 
-        imageView2.setOnClickListener(new View.OnClickListener() {
+        imageViewNLM.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageViewAfter.setImageDrawable(imageView2.getDrawable());
+                imageViewAfter.setImageDrawable(imageViewNLM.getDrawable());
             }
         });
 
-        imageView3.setOnClickListener(new View.OnClickListener() {
+        imageViewTV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageViewAfter.setImageDrawable(imageView3.getDrawable());
+                imageViewAfter.setImageDrawable(imageViewTV.getDrawable());
             }
         });
 
-        imageView4.setOnClickListener(new View.OnClickListener() {
+        imageViewWavelet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imageViewAfter.setImageDrawable(imageView4.getDrawable());
+                imageViewAfter.setImageDrawable(imageViewWavelet.getDrawable());
             }
         });
+    }
+
+    private byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
     }
 
     private String getStringImage(byte[] photoData) {
@@ -451,12 +468,16 @@ public class DenoiseActivity extends AppCompatActivity {
 
         ContentValues contentValues = new ContentValues();
 
+        MyDatabase myDatabase = MyDatabase.getDatabase(this);
+        PhotoDao photoDao = myDatabase.photoDao();
+        PhotoEntity photoEntity = photoDao.getByPhotoId(photoId);
+
         if (selectedImageFormat == 0 || selectedImageFormat == -1) {
-            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis() + ".jpg");
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, photoEntity.getPhotoName() + ".jpg");
         } else if (selectedImageFormat == 1) {
-            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis() + ".png");
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, photoEntity.getPhotoName() + ".png");
         } else if (selectedImageFormat == 2) {
-            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis() + ".webp");
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, photoEntity.getPhotoName() + ".webp");
         }
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "images/*");
         Uri uri = contentResolver.insert(images, contentValues);

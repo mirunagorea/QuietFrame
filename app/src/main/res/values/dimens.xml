@@ -4,6 +4,6 @@
     <dimen name="_10dp">10dp</dimen>
     <dimen name="indicator_size">8dp</dimen>
     <dimen name="indicator_margin">4dp</dimen>
-    <dimen name="card_view_opened_height">300dp</dimen>
+    <dimen name="card_view_opened_height">330dp</dimen>
     <dimen name="card_view_closed_height">80dp</dimen>
 </resources>
