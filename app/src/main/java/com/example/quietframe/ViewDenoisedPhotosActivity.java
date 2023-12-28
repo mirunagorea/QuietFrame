@@ -1,6 +1,7 @@
 package com.example.quietframe;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -13,8 +14,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStream;
@@ -30,6 +35,10 @@ public class ViewDenoisedPhotosActivity extends AppCompatActivity {
     private ImageView imgViewDownloadTV;
     private ImageView imgViewDownloadNLM;
     private ImageView imgViewDownloadWavelet;
+    private TextView textViewCNN;
+    private TextView textViewTV;
+    private TextView textViewNLM;
+    private TextView textViewWavelet;
     private long photoId;
     private int selectedImageFormat = 0;
 
@@ -48,6 +57,16 @@ public class ViewDenoisedPhotosActivity extends AppCompatActivity {
         imgViewDownloadTV = findViewById(R.id.imageViewDownloadTV);
         imgViewDownloadNLM = findViewById(R.id.imageViewDownloadNLM);
         imgViewDownloadWavelet = findViewById(R.id.imageViewDownloadWavelet);
+
+        textViewCNN = findViewById(R.id.textViewCNN);
+        textViewTV = findViewById(R.id.textViewTV);
+        textViewNLM = findViewById(R.id.textViewNLM);
+        textViewWavelet = findViewById(R.id.textViewWavelet);
+
+        changeTextColor(textViewCNN, "The result produced by the Convolutional Neural Network", "Convolutional Neural Network");
+        changeTextColor(textViewTV, "The result produced by the Total Variation Algorithm", "Total Variation Algorithm");
+        changeTextColor(textViewNLM, "The result produced by the Non-Local Means Algorithm", "Non-Local Means Algorithm");
+        changeTextColor(textViewWavelet, "The result produced by the Wavelet Algorithm", "Wavelet Algorithm");
 
         if(getIntent().hasExtra("ID")){
             photoId = getIntent().getExtras().getLong("ID");
@@ -158,5 +177,13 @@ public class ViewDenoisedPhotosActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void changeTextColor(TextView textView, String fullText, String differentColorText){
+        SpannableString spannableString = new SpannableString(fullText);
+        int startIndex = fullText.indexOf(differentColorText);
+        int endIndex = startIndex + differentColorText.length();
+        spannableString.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.color_primary_light)), startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        textView.setText(spannableString);
     }
 }

@@ -1,33 +1,52 @@
 package com.example.quietframe;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.CursorWindow;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.chaquo.python.android.AndroidPlatform;
 import com.example.quietframe.fragments.HomeFragment;
 import com.example.quietframe.fragments.ProfileFragment;
 import com.example.quietframe.fragments.SearchFragment;
 import com.example.quietframe.fragments.SettingsFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import org.opencv.android.OpenCVLoader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.List;
+
 import com.chaquo.python.Python;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.objects.DetectedObject;
+import com.google.mlkit.vision.objects.ObjectDetection;
+import com.google.mlkit.vision.objects.ObjectDetector;
+import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
 public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
@@ -37,12 +56,15 @@ public class MainActivity extends AppCompatActivity {
     private byte[] photoData;
 
     private long userId;
+    private ObjectDetector objectDetector;
+    private MutableLiveData<PhotoEntity> photoEntityLiveData = new MutableLiveData<>();
+    private MutableLiveData<ObjectEntity> objectEntityLiveData = new MutableLiveData<>();
     private static String TAG = "MainActivity";
-    static{
-        if(OpenCVLoader.initDebug()){
+
+    static {
+        if (OpenCVLoader.initDebug()) {
             Log.e(TAG, "opencv installed successfully");
-        }
-        else{
+        } else {
             Log.e(TAG, "opencv isn't installed");
         }
     }
@@ -94,10 +116,74 @@ public class MainActivity extends AppCompatActivity {
                     PhotoEntity photoEntity = new PhotoEntity();
                     photoEntity.setUserId(userId);
                     photoEntity.setPhotoData(photoData);
+
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             long photoId = photoDao.insertPhoto(photoEntity);
+                            photoEntity.setId(photoId);
+                            photoEntityLiveData.postValue(photoEntity);
+
+                            ObjectDao objectDao = myDatabase.objectDao();
+                            DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
+
+                            // Multiple object detection in static images
+                            ObjectDetectorOptions options =
+                                    new ObjectDetectorOptions.Builder()
+                                            .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
+                                            .enableMultipleObjects()
+                                            .enableClassification()
+                                            .build();
+                            objectDetector = ObjectDetection.getClient(options);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
+                            Log.e("Bitmap Dimensions", bitmap.getWidth() + " x " + bitmap.getHeight());
+                            InputImage image = InputImage.fromBitmap(bitmap, 0);
+                            objectDetector.process(image)
+                                    .addOnSuccessListener(
+                                            new OnSuccessListener<List<DetectedObject>>() {
+                                                @Override
+                                                public void onSuccess(List<DetectedObject> detectedObjects) {
+                                                    Log.e("Classification", "Success");
+                                                    if (detectedObjects.isEmpty()) {
+                                                        Log.e("No detected objects", ":(");
+                                                    } else {
+                                                        for (DetectedObject detectedObject : detectedObjects) {
+                                                            Log.e("Detected Object", detectedObject.getLabels().toString());
+                                                            for (DetectedObject.Label label : detectedObject.getLabels()) {
+                                                                String text = label.getText();
+                                                                ObjectEntity objectEntity = new ObjectEntity();
+                                                                objectEntity.setLabel(text);
+                                                                new Thread(new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+//                                                                        objectDao.insertObject(objectEntity);
+                                                                        long objectId = objectDao.insertObject(objectEntity);
+                                                                        objectEntity.setId(objectId);
+                                                                        objectEntityLiveData.postValue(objectEntity);
+                                                                    }
+                                                                }).start();
+//                                                                Log.e("Classification", String.valueOf(photoEntity.getId()) + " " + text);
+//                                                                DetectedObjectPhotoEntity detectedObjectPhotoEntity = new DetectedObjectPhotoEntity();
+//                                                                detectedObjectPhotoEntity.setPhotoId(photoEntity.getId());
+//                                                                detectedObjectPhotoEntity.setObjectId(objectEntity.getId());
+//                                                                new Thread(new Runnable() {
+//                                                                    @Override
+//                                                                    public void run() {
+//                                                                        detectedObjectDao.insertDetectedObject(detectedObjectPhotoEntity);
+//                                                                    }
+//                                                                }).start();
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            })
+                                    .addOnFailureListener(
+                                            new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.e("Object Detection", Log.getStackTraceString(new Exception()));
+                                                }
+                                            });
 
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -109,6 +195,48 @@ public class MainActivity extends AppCompatActivity {
                                     startActivity(intent);
                                 }
                             });
+                        }
+                    }).start();
+                }
+            }
+        });
+
+        photoEntityLiveData.observe(this, new Observer<PhotoEntity>() {
+            @Override
+            public void onChanged(PhotoEntity photoEntity) {
+                long photoId = photoEntity.getId();
+                ObjectEntity objectEntity = objectEntityLiveData.getValue();
+                if (objectEntity != null) {
+                    DetectedObjectPhotoEntity detectedObjectPhotoEntity = new DetectedObjectPhotoEntity();
+                    detectedObjectPhotoEntity.setPhotoId(photoId);
+                    detectedObjectPhotoEntity.setObjectId(objectEntity.getId());
+                    MyDatabase myDatabase = MyDatabase.getDatabase(MainActivity.this);
+                    DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            detectedObjectDao.insertDetectedObject(detectedObjectPhotoEntity);
+                        }
+                    }).start();
+                }
+            }
+        });
+
+        objectEntityLiveData.observe(this, new Observer<ObjectEntity>() {
+            @Override
+            public void onChanged(ObjectEntity objectEntity) {
+                long objectId = objectEntity.getId();
+                PhotoEntity photoEntity = photoEntityLiveData.getValue();
+                if (photoEntity != null) {
+                    DetectedObjectPhotoEntity detectedObjectPhotoEntity = new DetectedObjectPhotoEntity();
+                    detectedObjectPhotoEntity.setPhotoId(photoEntity.getId());
+                    detectedObjectPhotoEntity.setObjectId(objectId);
+                    MyDatabase myDatabase = MyDatabase.getDatabase(MainActivity.this);
+                    DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            detectedObjectDao.insertDetectedObject(detectedObjectPhotoEntity);
                         }
                     }).start();
                 }
@@ -127,10 +255,9 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        if(fragment instanceof SettingsFragment){
+        if (fragment instanceof SettingsFragment) {
             fragmentTransaction.replace(R.id.frame_layout, fragment);
-        }
-        else{
+        } else {
             fragmentTransaction.replace(R.id.frame_layout, fragment);
             fragmentTransaction.addToBackStack(null);
         }

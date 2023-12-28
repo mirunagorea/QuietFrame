@@ -14,11 +14,11 @@ import com.example.quietframe.R;
 
 import java.util.List;
 
-public class PhotosAdapterSearch extends RecyclerView.Adapter<PhotoViewHolder>{
+public class PhotosAdapterSearch extends RecyclerView.Adapter<PhotoViewHolder> {
     private List<PhotoEntity> photos;
     private final RecyclerViewInterface recyclerViewInterface;
 
-    public void setFilteredList(List<PhotoEntity> filteredList){
+    public void setFilteredList(List<PhotoEntity> filteredList) {
         this.photos = filteredList;
         notifyDataSetChanged();
     }
@@ -31,7 +31,7 @@ public class PhotosAdapterSearch extends RecyclerView.Adapter<PhotoViewHolder>{
     @NonNull
     @Override
     public PhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item_search, parent , false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item_search, parent, false);
         return new PhotoViewHolder(itemView, recyclerViewInterface);
     }
 
@@ -41,6 +41,7 @@ public class PhotosAdapterSearch extends RecyclerView.Adapter<PhotoViewHolder>{
         Bitmap bitmap = BitmapFactory.decodeByteArray(currentPhoto.getPhotoData(), 0, currentPhoto.getPhotoData().length);
         holder.getPhotoImageView().setImageBitmap(bitmap);
         holder.getPhotoTextView().setText(currentPhoto.getPhotoName());
+        holder.getPhotoTextView().setText(holder.getPhotoTextView().getText() + " " + currentPhoto.getId());
     }
 
     @Override
