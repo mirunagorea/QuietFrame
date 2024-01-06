@@ -1,5 +1,4 @@
 package com.example.quietframe.fragments;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,45 +6,32 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.example.quietframe.DenoiseActivity;
-import com.example.quietframe.DetectedObjectDao;
-import com.example.quietframe.DetectedObjectPhotoEntity;
-import com.example.quietframe.MyDatabase;
-import com.example.quietframe.ObjectDao;
-import com.example.quietframe.ObjectEntity;
-import com.example.quietframe.PhotoDao;
-import com.example.quietframe.PhotoEntity;
+import com.example.quietframe.database.dao.DetectedObjectDao;
+import com.example.quietframe.database.entity.DetectedObjectPhotoEntity;
+import com.example.quietframe.database.MyDatabase;
+import com.example.quietframe.database.dao.ObjectDao;
+import com.example.quietframe.database.entity.ObjectEntity;
+import com.example.quietframe.database.dao.PhotoDao;
+import com.example.quietframe.database.entity.PhotoEntity;
 import com.example.quietframe.R;
-import com.example.quietframe.ViewDenoisedPhotosActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.objects.DetectedObject;
-import com.google.mlkit.vision.objects.ObjectDetection;
-import com.google.mlkit.vision.objects.ObjectDetector;
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
-import com.google.mlkit.vision.objects.defaults.PredefinedCategory;
+import com.example.quietframe.activities.ViewDenoisedPhotosActivity;
+import com.example.quietframe.fragments.adapter.PhotosAdapterSearch;
+import com.example.quietframe.fragments.adapter.RecyclerViewInterface;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -61,10 +47,9 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     private SearchView searchView;
     private int selectedImageFormat = 0;
     //    private ObjectDetector objectDetector;
-    private TextView objectsTextView;
-    private TextView detectedObjectsTextView;
     private List<ObjectEntity> objects = new ArrayList<>();
     private List<DetectedObjectPhotoEntity> detectedObjects = new ArrayList<>();
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
 
     public SearchFragment() {
@@ -81,18 +66,6 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         recyclerViewPhotos = view.findViewById(R.id.recyclerViewPhotos);
         searchView = view.findViewById(R.id.searchView);
-        objectsTextView = view.findViewById(R.id.textViewObjects);
-        detectedObjectsTextView = view.findViewById(R.id.textViewDetectedObjects);
-//        searchView.clearFocus();
-
-//        // Multiple object detection in static images
-//        ObjectDetectorOptions options =
-//                new ObjectDetectorOptions.Builder()
-//                        .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
-//                        .enableMultipleObjects()
-//                        .enableClassification()
-//                        .build();
-//        objectDetector = ObjectDetection.getClient(options);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -106,69 +79,17 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
                 return false;
             }
         });
-        populatePhotos();
-        setupRecyclerView();
-
-//        for (PhotoEntity photoEntity : usersPhotos) {
-//            byte[] photoData = photoEntity.getPhotoData();
-//            Bitmap bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.length);
-//            InputImage image = InputImage.fromBitmap(bitmap, 0);
-//            objectDetector.process(image)
-//                    .addOnSuccessListener(
-//                            new OnSuccessListener<List<DetectedObject>>() {
-//                                @Override
-//                                public void onSuccess(List<DetectedObject> detectedObjects) {
-//                                    for (DetectedObject detectedObject : detectedObjects) {
-//                                        Rect boundingBox = detectedObject.getBoundingBox();
-//                                        Integer trackingId = detectedObject.getTrackingId();
-//                                        for (DetectedObject.Label label : detectedObject.getLabels()) {
-//                                            String text = label.getText();
-//                                            Log.e("Classification", String.valueOf(photoEntity.getId()) + " " + text);
-//                                            float confidence = label.getConfidence();
-//                                        }
-//                                    }
-//                                }
-//                            })
-//                    .addOnFailureListener(
-//                            new OnFailureListener() {
-//                                @Override
-//                                public void onFailure(@NonNull Exception e) {
-//                                    // Task failed with an exception
-//                                    // ...
-//                                }
-//                            });
-//        }
-        MyDatabase myDatabase = MyDatabase.getDatabase(getContext());
-        ObjectDao objectDao = myDatabase.objectDao();
-        new Thread(new Runnable() {
+        populatePhotos(new OnPhotosLoadedListener() {
             @Override
-            public void run() {
-                objects = objectDao.getAllObjects();
-                getActivity().runOnUiThread(new Runnable() {
+            public void onPhotosLoaded(List<PhotoEntity> photos) {
+                mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        for (ObjectEntity object : objects) {
-                            objectsTextView.setText(objectsTextView.getText() + System.getProperty("line.separator") + object.getId() + " " + object.getLabel());
-                        }
+                        setupRecyclerView();
                     }
                 });
             }
-        }).start();
-        DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                detectedObjects = detectedObjectDao.getAllDetectedObjects();
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (DetectedObjectPhotoEntity detectedObject : detectedObjects) {
-                            detectedObjectsTextView.setText(detectedObjectsTextView.getText() + System.getProperty("line.separator") + detectedObject.getObjectId() + detectedObject.getPhotoId());
-                        }
-                    }
-                });
-            }
-        }).start();
+        });
         return view;
     }
 
@@ -180,13 +101,33 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
                     filteredList.add(photoEntity);
                 }
             }
+            MyDatabase myDatabase = MyDatabase.getDatabase(getContext());
+            DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    detectedObjects = detectedObjectDao.getAllDetectedObjectsByPhotoId(userId, photoEntity.getId());
+                    for (DetectedObjectPhotoEntity detectedObject : detectedObjects) {
+                        long objectId = detectedObject.getObjectId();
+                        Log.e("Object Id", String.valueOf(objectId));
+                        ObjectDao objectDao = myDatabase.objectDao();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                String objectLabel = objectDao.getObjectLabelById(objectId);
+                                Log.e("Object Label", objectLabel);
+                                if (objectLabel.equalsIgnoreCase(newText)) {
+                                    Log.e("Object Label Equals Text: ", "Yes");
+                                    filteredList.add(photoEntity);
+                                }
+                            }
+                        }).start();
+                    }
+                }
+            }).start();
         }
+        photosAdapterSearch.setFilteredList(filteredList);
 
-        if (filteredList.isEmpty()) {
-            Toast.makeText(getContext(), "No data found", Toast.LENGTH_LONG).show();
-        } else {
-            photosAdapterSearch.setFilteredList(filteredList);
-        }
     }
 
     private void setupRecyclerView() {
@@ -195,7 +136,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         recyclerViewPhotos.setAdapter(photosAdapterSearch);
     }
 
-    private void populatePhotos() {
+    private void populatePhotos(OnPhotosLoadedListener callback) {
         usersPhotos = new ArrayList<>();
         MyDatabase myDatabase = MyDatabase.getDatabase(getActivity());
         PhotoDao photoDao = myDatabase.photoDao();
@@ -206,6 +147,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
                 for (PhotoEntity photoEntity : photoEntities) {
                     usersPhotos.add(photoEntity);
                 }
+                callback.onPhotosLoaded(usersPhotos);
             }
         }).start();
     }
@@ -269,5 +211,9 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public interface OnPhotosLoadedListener{
+        void onPhotosLoaded(List<PhotoEntity> photos);
     }
 }

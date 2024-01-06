@@ -5,10 +5,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/ScreenBackground">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/frame_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="60dp"
         android:orientation="vertical" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
@@ -30,11 +31,13 @@
             app:labelVisibilityMode="labeled"
             app:itemTextColor="@color/light_tiffany_blue"
             app:itemIconTint="@color/light_tiffany_blue"
+            app:itemBackground="@drawable/bottom_nav_item_background"
             app:menu="@menu/bottom_menu" />
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:contentDescription="@string/add_image_to_be_denoised"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/color_primary"

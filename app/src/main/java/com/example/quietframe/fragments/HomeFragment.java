@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,10 +16,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.example.quietframe.MyDatabase;
-import com.example.quietframe.PhotoDao;
-import com.example.quietframe.PhotoEntity;
-import com.example.quietframe.PhotosAdapter;
+import com.example.quietframe.database.MyDatabase;
+import com.example.quietframe.database.dao.PhotoDao;
+import com.example.quietframe.database.entity.PhotoEntity;
+import com.example.quietframe.adapter.PhotosAdapter;
 import com.example.quietframe.R;
 
 import java.util.ArrayList;
@@ -67,7 +69,7 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         viewPager = view.findViewById(R.id.viewPager);
         layoutIndicator = view.findViewById(R.id.layoutIndicator);
-        viewPager = view.findViewById(R.id.viewPager);
+//        viewPager = view.findViewById(R.id.viewPager);
         indicators = new ArrayList<>();
         createIndicators();
         setCurrentIndicator(0);
@@ -119,9 +121,23 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
     }
 
     private void updateIndicators(int position) {
+//        indicators.remove(position);
+//        createIndicators();
+//        setCurrentIndicator(viewPager.getCurrentItem() % indicators.size());
+//        photosAdapter.updateIndicators(indicators);
         indicators.remove(position);
-        createIndicators();
-        setCurrentIndicator(viewPager.getCurrentItem() % indicators.size());
+
+        // Ensure the position is within the valid range
+        if (position >= 0 && position < indicators.size()) {
+            setCurrentIndicator(position);
+        } else if (!indicators.isEmpty()) {
+            // If the position is out of range, set the indicator to the last one
+            setCurrentIndicator(indicators.size() - 1);
+        } else {
+            // If there are no indicators left, clear the layoutIndicator
+            layoutIndicator.removeAllViews();
+        }
+
         photosAdapter.updateIndicators(indicators);
     }
 
@@ -175,11 +191,18 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
 
     @Override
     public void onItemDeleted(int position) {
-        // Remove the indicator at the specified position
+// Remove the indicator at the specified position
         layoutIndicator.removeViewAt(position);
-        updateIndicators(position);
 
-        // Pass the updated indicators list to the adapter
-        photosAdapter.updateIndicators(indicators);
+        // Create a Handler to run code on the main (UI) thread
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                updateIndicators(position);
+
+                // Pass the updated indicators list to the adapter
+                photosAdapter.updateIndicators(indicators);
+            }
+        });
     }
 }

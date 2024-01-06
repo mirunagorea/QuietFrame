@@ -26,11 +26,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.quietframe.ForgotPasswordActivity;
-import com.example.quietframe.MyDatabase;
+import com.example.quietframe.activities.ForgotPasswordActivity;
+import com.example.quietframe.database.MyDatabase;
 import com.example.quietframe.R;
-import com.example.quietframe.UserDao;
-import com.example.quietframe.UserEntity;
+import com.example.quietframe.database.dao.UserDao;
+import com.example.quietframe.database.entity.UserEntity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

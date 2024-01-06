@@ -12,5 +12,7 @@
     <color name="color_primary_dark">#0A1E29</color>
     <color name="color_primary_light">#184A63</color>
 
+    <color name="splashscreen_background">#01030F</color>
+
 
 </resources>

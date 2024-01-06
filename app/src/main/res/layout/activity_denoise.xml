@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_tiffany_blue"
-    tools:context=".DenoiseActivity">
+    tools:context=".activities.DenoiseActivity">
 
     <ImageView
         android:id="@+id/imageViewAfter"

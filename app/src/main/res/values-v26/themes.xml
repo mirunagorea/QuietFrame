@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Base.Theme.SplashScreen" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowSplashscreenContent">@layout/splash_screen_layout</item>
+    </style>
+
+    <style name="Base.Theme.QuietFrame" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorPrimaryVariant">@color/color_primary_light</item>
+        <item name="colorAccent">@color/color_primary</item>
+        <item name="colorSecondary">@color/tiffany_blue</item>
+        <item name="colorSecondaryVariant">@color/light_tiffany_blue</item>
+        <item name="checkedIconTint">@color/white</item>
+        <item name="android:statusBarColor">@color/color_primary_dark</item>
+        <item name="android:windowSplashscreenContent">@layout/splash_screen_layout</item>
+        <item name="android:textColor">#091A23</item>
+
+    </style>
+
+</resources>

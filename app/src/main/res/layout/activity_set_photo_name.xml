@@ -9,7 +9,7 @@
     android:background="@color/light_tiffany_blue"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".SetPhotoName">
+    tools:context=".activities.SetPhotoNameActivity">
 
     <TextView
         android:id="@+id/setNameTextView"
