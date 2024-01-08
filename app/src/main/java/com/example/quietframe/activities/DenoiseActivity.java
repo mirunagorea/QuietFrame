@@ -53,6 +53,9 @@ import com.example.quietframe.R;
 import com.google.mlkit.vision.objects.ObjectDetector;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
@@ -170,6 +173,16 @@ public class DenoiseActivity extends AppCompatActivity {
                         float[] processedArray = postProcessOutput(outputArr, height, width);
                         outputBitmap = createBitmapFromProcessedArray(processedArray, height, width);
                         denoisedPhotoDataCNN = bitmapToByteArray(outputBitmap);
+
+                        Denoising denoisingHelper = new Denoising();
+                        MatOfByte inputMatOfByte = new MatOfByte(imageData);
+                        Mat inputImage = Imgcodecs.imdecode(inputMatOfByte, Imgcodecs.IMREAD_COLOR);
+                        MatOfByte outputMatOfByte = new MatOfByte(denoisedPhotoDataCNN);
+                        Mat outputImage = Imgcodecs.imdecode(outputMatOfByte, Imgcodecs.IMREAD_COLOR);
+                        double psnr = denoisingHelper.calculatePSNR(inputImage, outputImage);
+                        double ssim = denoisingHelper.calculateSSIM(inputImage, outputImage);
+                        Log.e("PSNR CNN", String.valueOf(psnr));
+                        Log.e("SSIM CNN", String.valueOf(ssim));
 //
 //                        ObjectDao objectDao = myDatabase.objectDao();
 //                        DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
@@ -240,7 +253,12 @@ public class DenoiseActivity extends AppCompatActivity {
                     }
                 }).start();
 
-                denoisedPhotoDataNLM = Denoising.nonLocalMeansDenoising(photoEntity.getPhotoData());
+                Denoising.DenoisedResult denoisedResult = Denoising.nonLocalMeansDenoising(photoEntity.getPhotoData());
+                denoisedPhotoDataNLM = denoisedResult.denoisedPhotoData;
+                double psnrValueNLM = denoisedResult.psnrValue;
+                double ssimValueNLM = denoisedResult.ssimValue;
+                Log.e("PSNR NLM", String.valueOf(psnrValueNLM));
+                Log.e("SSIM NLM", String.valueOf(ssimValueNLM));
                 Bitmap bmpNLM = BitmapFactory.decodeByteArray(denoisedPhotoDataNLM, 0, denoisedPhotoDataNLM.length);
 
                 imageString = getStringImage(photoEntity.getPhotoData());
@@ -414,6 +432,30 @@ public class DenoiseActivity extends AppCompatActivity {
             }
         });
     }
+
+//    private double calculatePSNR(byte[] imageData, byte[] denoisedImageData) {
+//        Mat img1 = Imgcodecs.imdecode(new MatOfByte(imageData), Imgcodecs.IMREAD_COLOR);
+//        Mat img2 = Imgcodecs.imdecode(new MatOfByte(denoisedImageData), Imgcodecs.IMREAD_COLOR);
+//
+//        // Assuming both images have the same size
+//        double mse = 0;
+//        for (int i = 0; i < img1.rows(); i++) {
+//            for (int j = 0; j < img1.cols(); j++) {
+//                double[] pixel1 = img1.get(i, j);
+//                double[] pixel2 = img2.get(i, j);
+//
+//                for (int k = 0; k < img1.channels(); k++) {
+//                    mse += Math.pow(pixel1[k] - pixel2[k], 2);
+//                }
+//            }
+//        }
+//        mse /= (img1.rows() * img1.cols() * img1.channels());
+//
+//        double maxPixelValue = 255.0;
+//        double psnr = 10 * Math.log10((maxPixelValue * maxPixelValue) / mse);
+//
+//        return psnr;
+//    }
 
     private byte[] bitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
