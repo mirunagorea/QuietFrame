@@ -8,24 +8,37 @@
     android:background="@color/light_tiffany_blue"
     tools:context=".activities.DenoiseActivity">
 
+    <TextView
+        android:id="@+id/textViewAlgorithm"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="The result produced by the Neural Network"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/imageViewAfter"
         android:layout_width="350dp"
         android:layout_height="300dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="25dp"
         android:src="@drawable/denoised_img"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/textViewAlgorithm" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="175dp"
         android:layout_height="300dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="25dp"
         android:minWidth="2dp"
         app:layout_constraintStart_toStartOf="@id/imageViewAfter"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/textViewAlgorithm">
 
         <ImageView
             android:id="@+id/imageViewBefore"
@@ -82,7 +95,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardViewOtherEdits"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="100dp"
         app:cardCornerRadius="18dp"
         app:cardElevation="10dp"
         app:contentPadding="12dp"
@@ -110,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:text="Vezi rezultatul produs de alti algoritmi"
+                    android:text="See the result produced by other algorithms"
                     android:textColor="@color/color_primary_dark"
                     android:textSize="18sp"
                     android:textStyle="bold"

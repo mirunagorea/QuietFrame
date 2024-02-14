@@ -17,7 +17,6 @@ import com.example.quietframe.database.dao.UserDao;
 import com.example.quietframe.database.entity.UserEntity;
 
 @Database(entities = {UserEntity.class, PhotoEntity.class, ObjectEntity.class, DetectedObjectPhotoEntity.class}, version = 1)
-@TypeConverters({Converters.class})
 public abstract class  MyDatabase extends RoomDatabase {
     private static final String dbName = "myDatabase";
     private static MyDatabase myDatabase;

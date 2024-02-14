@@ -1,8 +1,12 @@
 package com.example.quietframe.database.entity;
 
+import android.util.Log;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
+import org.mindrot.jbcrypt.BCrypt;
 
 @Entity(tableName = "users")
 public class UserEntity {
@@ -52,6 +56,7 @@ public class UserEntity {
     public void setPassword(String password) {
         this.password = password;
     }
+
 
     public String getPasswordResetToken() {
         return passwordResetToken;

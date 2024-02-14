@@ -86,6 +86,7 @@ public class DenoiseActivity extends AppCompatActivity {
     private FrameLayout frameLayout;
     private ProgressBar loadingProgressBar;
     private TextView textViewButton;
+    private TextView textViewAlgorithm;
     private View blueView;
     private Module module;
     private ConstraintLayout toggleBtnLayout;
@@ -126,11 +127,13 @@ public class DenoiseActivity extends AppCompatActivity {
         downloadButton = findViewById(R.id.buttonSave);
         otherEditsCardView = findViewById(R.id.cardViewOtherEdits);
         textViewButton = findViewById(R.id.textViewButton);
+        textViewAlgorithm = findViewById(R.id.textViewAlgorithm);
         blueView = findViewById(R.id.blueView);
         toggleBtnLayout = findViewById(R.id.toggleBtn);
         frameLayout = findViewById(R.id.frameLayout);
         loadingProgressBar = findViewById(R.id.loadingCircle);
         seekBar = findViewById(R.id.seekBar);
+        textViewAlgorithm.setVisibility(View.INVISIBLE);
         downloadButton.setVisibility(View.INVISIBLE);
         imageViewAfter.setVisibility(View.INVISIBLE);
         frameLayout.setVisibility(View.INVISIBLE);
@@ -155,15 +158,9 @@ public class DenoiseActivity extends AppCompatActivity {
                 PhotoEntity photoEntity = photoDao.getByPhotoId(photoId);
                 Log.e("POZA ADAUGATA", String.valueOf(photoEntity.getPhotoData()));
                 byte[] imageData = photoEntity.getPhotoData();
-//                for (int i = 0; i < 20; i++) {
-//                    Log.d("imageDataArrayValue", "Index" + i + ": " + String.valueOf(imageData[i]));
-//                }
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
                 int width = bitmap.getWidth();
                 int height = bitmap.getHeight();
-                Log.e("!!!!imageData.length", String.valueOf(imageData.length));
-                Log.e("!!!!width", String.valueOf(width));
-                Log.e("!!!!height", String.valueOf(height));
                 Tensor imageTensor = byteArrayToTensor(imageData);
                 new Thread(new Runnable() {
                     @Override
@@ -183,67 +180,6 @@ public class DenoiseActivity extends AppCompatActivity {
                         double ssim = denoisingHelper.calculateSSIM(inputImage, outputImage);
                         Log.e("PSNR CNN", String.valueOf(psnr));
                         Log.e("SSIM CNN", String.valueOf(ssim));
-//
-//                        ObjectDao objectDao = myDatabase.objectDao();
-//                        DetectedObjectDao detectedObjectDao = myDatabase.detectedObjectDao();
-//
-//                        // Multiple object detection in static images
-//                        ObjectDetectorOptions options =
-//                                new ObjectDetectorOptions.Builder()
-//                                        .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
-//                                        .enableMultipleObjects()
-//                                        .enableClassification()
-//                                        .build();
-//                        objectDetector = ObjectDetection.getClient(options);
-//                        InputImage image = InputImage.fromBitmap(outputBitmap, 0);
-//                        objectDetector.process(image)
-//                                .addOnSuccessListener(
-//                                        new OnSuccessListener<List<DetectedObject>>() {
-//                                            @Override
-//                                            public void onSuccess(List<DetectedObject> detectedObjects) {
-//                                                Log.e("Classification", "Success");
-//                                                if (detectedObjects.isEmpty()) {
-//                                                    Log.e("No detected objects", ":(");
-//                                                } else {
-//                                                    for (DetectedObject detectedObject : detectedObjects) {
-//                                                        for (DetectedObject.Label label : detectedObject.getLabels()) {
-//                                                            String text = label.getText();
-//                                                            Log.e("Detected Object", text);
-//                                                            ObjectEntity objectEntity = new ObjectEntity();
-//                                                            objectEntity.setLabel(text);
-//                                                            userId = photoEntity.getUserId();
-//                                                            objectEntity.setUserId(userId);
-//                                                            new Thread(new Runnable() {
-//                                                                @Override
-//                                                                public void run() {
-////                                                                        objectDao.insertObject(objectEntity);
-//                                                                    long objectId = objectDao.insertObject(objectEntity);
-//                                                                    objectEntity.setId(objectId);
-//                                                                    objectEntityLiveData.postValue(objectEntity);
-//                                                                }
-//                                                            }).start();
-////                                                                Log.e("Classification", String.valueOf(photoEntity.getId()) + " " + text);
-////                                                                DetectedObjectPhotoEntity detectedObjectPhotoEntity = new DetectedObjectPhotoEntity();
-////                                                                detectedObjectPhotoEntity.setPhotoId(photoEntity.getId());
-////                                                                detectedObjectPhotoEntity.setObjectId(objectEntity.getId());
-////                                                                new Thread(new Runnable() {
-////                                                                    @Override
-////                                                                    public void run() {
-////                                                                        detectedObjectDao.insertDetectedObject(detectedObjectPhotoEntity);
-////                                                                    }
-////                                                                }).start();
-//                                                        }
-//                                                    }
-//                                                }
-//                                            }
-//                                        })
-//                                .addOnFailureListener(
-//                                        new OnFailureListener() {
-//                                            @Override
-//                                            public void onFailure(@NonNull Exception e) {
-//                                                Log.e("Object Detection", Log.getStackTraceString(new Exception()));
-//                                            }
-//                                        });
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -282,6 +218,7 @@ public class DenoiseActivity extends AppCompatActivity {
                         imageViewBefore.setImageBitmap(BitmapFactory.decodeByteArray(photoEntity.getPhotoData(), 0, photoEntity.getPhotoData().length));
                         imageViewAfter.setImageBitmap(outputBitmap);
                         imageViewCNN.setImageBitmap(outputBitmap);
+                        textViewAlgorithm.setVisibility(View.VISIBLE);
                         downloadButton.setVisibility(View.VISIBLE);
                         imageViewAfter.setVisibility(View.VISIBLE);
                         frameLayout.setVisibility(View.VISIBLE);
@@ -408,6 +345,7 @@ public class DenoiseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewAfter.setImageDrawable(imageViewCNN.getDrawable());
+                textViewAlgorithm.setText("The result produced by the Neural Network");
             }
         });
 
@@ -415,6 +353,7 @@ public class DenoiseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewAfter.setImageDrawable(imageViewNLM.getDrawable());
+                textViewAlgorithm.setText("The result produced by Non-Local Means");
             }
         });
 
@@ -422,6 +361,7 @@ public class DenoiseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewAfter.setImageDrawable(imageViewTV.getDrawable());
+                textViewAlgorithm.setText("The result produced by Total Variation");
             }
         });
 
@@ -429,33 +369,10 @@ public class DenoiseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageViewAfter.setImageDrawable(imageViewWavelet.getDrawable());
+                textViewAlgorithm.setText("The result produced by Wavelet Denoising");
             }
         });
     }
-
-//    private double calculatePSNR(byte[] imageData, byte[] denoisedImageData) {
-//        Mat img1 = Imgcodecs.imdecode(new MatOfByte(imageData), Imgcodecs.IMREAD_COLOR);
-//        Mat img2 = Imgcodecs.imdecode(new MatOfByte(denoisedImageData), Imgcodecs.IMREAD_COLOR);
-//
-//        // Assuming both images have the same size
-//        double mse = 0;
-//        for (int i = 0; i < img1.rows(); i++) {
-//            for (int j = 0; j < img1.cols(); j++) {
-//                double[] pixel1 = img1.get(i, j);
-//                double[] pixel2 = img2.get(i, j);
-//
-//                for (int k = 0; k < img1.channels(); k++) {
-//                    mse += Math.pow(pixel1[k] - pixel2[k], 2);
-//                }
-//            }
-//        }
-//        mse /= (img1.rows() * img1.cols() * img1.channels());
-//
-//        double maxPixelValue = 255.0;
-//        double psnr = 10 * Math.log10((maxPixelValue * maxPixelValue) / mse);
-//
-//        return psnr;
-//    }
 
     private byte[] bitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -512,9 +429,6 @@ public class DenoiseActivity extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
         Tensor inputTensor = normalizeImage(bitmap);
         long[] tensorShape = inputTensor.shape();
-//        for (long dimension : tensorShape) {
-//            Log.d("TensorShape", Long.toString(dimension));
-//        }
         return inputTensor;
     }
 
@@ -549,9 +463,6 @@ public class DenoiseActivity extends AppCompatActivity {
         for (int i = 0; i < outputArr.length; i++) {
             outputArr[i] = Math.min(255, Math.max(0, outputArr[i]));
         }
-//        for (int i = 0; i < 100; i++) {
-//            Log.d("OutputArrayValue", "Index" + i + ": " + outputArr[i]);
-//        }
         return outputArr;
     }
 

@@ -17,7 +17,16 @@ def total_variation(data):
     denoised_img = denoise_tv_chambolle(img, weight=0.1, multichannel=True)
     denoised_img = img_as_ubyte(denoised_img)
     denoised_img = cv2.cvtColor(denoised_img, cv2.COLOR_BGR2RGB)
+
+    if img.shape != denoised_img.shape:
+        denoised_img = cv2.resize(denoised_img, (img.shape[1], img.shape[0]))
+        denoised_img = cv2.cvtColor(denoised_img, cv2.COLOR_RGB2GRAY)
+
     denoised_img_copy = denoised_img
+    input_dimensions = str(img.shape)
+    denoised_dimensions = str(denoised_img_copy.shape)
+    Log.e("TV denoised_img_copy dimensions", denoised_dimensions)
+    Log.e("TV input dimensions", input_dimensions)
 
     psnr = peak_signal_noise_ratio(img, denoised_img_copy)
     Log.e("PythonScript", "total_variation PSNR value: {}".format(psnr))
@@ -40,10 +49,22 @@ def wavelet_denoising(data):
 
 #       sigma_est = estimate_sigma(img, multichannel=True, average_sigmas=True)
 
-    img_bayes = denoise_wavelet(img, method='BayesShrink', mode='soft', wavelet_levels=3, wavelet='coif5', multichannel=True, convert2ycbcr=True, rescale_sigma=True)
+    if img.ndim == 3:
+        img_bayes = denoise_wavelet(img, method='BayesShrink', mode='soft', wavelet_levels=3, wavelet='coif5', multichannel=True, convert2ycbcr=True, rescale_sigma=True)
+    elif img.ndim == 2:
+                img_bayes = denoise_wavelet(img, method='BayesShrink', mode='soft', wavelet_levels=3, wavelet='coif5', multichannel=False, rescale_sigma=True)
     denoised_img = img_as_ubyte(img_bayes)
     denoised_img = cv2.cvtColor(denoised_img, cv2.COLOR_BGR2RGB)
+
+    if img.shape != denoised_img.shape:
+         denoised_img = cv2.resize(denoised_img, (img.shape[1], img.shape[0]))
+         denoised_img = cv2.cvtColor(denoised_img, cv2.COLOR_RGB2GRAY)
     denoised_img_copy = denoised_img
+
+    input_dimensions = str(img.shape)
+    denoised_dimensions = str(denoised_img_copy.shape)
+    Log.e("Wavelet denoised_img_copy dimensions", denoised_dimensions)
+    Log.e("Wavelet input dimensions", input_dimensions)
 
     psnr = peak_signal_noise_ratio(img, denoised_img_copy)
     Log.e("PythonScript", "wavelet_denoising PSNR value: {}".format(psnr))

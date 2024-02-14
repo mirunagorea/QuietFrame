@@ -13,15 +13,19 @@
         <item name="android:statusBarColor">@color/color_primary_dark</item>
         <item name="android:windowBackground">@color/color_primary_dark</item>
         <item name="android:background">@color/color_primary_dark</item>
-
+        <item name="android:windowSplashscreenContent">@layout/splash_screen_layout</item>
         <item name="android:textColor">#DCF4F6</item>
     </style>
 
     <style name="ScreenBackground"><item name="android:background">#091A23</item></style>
     <style name="MenuBackground"><item name="android:background">@color/color_primary</item></style>
+    <style name="CardViewBackground"><item name="android:background">@color/color_primary</item></style>
     <style name="TextColor"><item name="android:textColor">#DCF4F6</item></style>
     <style name="Delimitator"><item name="android:background">#DCF4F6</item></style>
     <style name="ButtonTextColor"><item name="android:textColor">@color/light_tiffany_blue</item></style>
     <style name="CoverGradient"><item name="android:background">@drawable/profile_cover_dark</item></style>
+    <style name="DownloadButtonTintBackground"><item name="android:tint">@color/tiffany_blue</item><item name="android:background">@color/color_primary</item></style>
+    <style name="TextViewBackground"><item name="android:background">@color/color_primary</item></style>
+    <style name="IconBackground"><item name="android:background">@color/color_primary</item></style>
 
 </resources>

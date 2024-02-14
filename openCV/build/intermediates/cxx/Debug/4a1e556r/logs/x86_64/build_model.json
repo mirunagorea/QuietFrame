@@ -124,7 +124,7 @@
         "rootBuildGradleFolder": "D:\\LICENTA\\QuietFrameGit\\QuietFrame",
         "sdkFolder": "C:\\Users\\Miruna\\AppData\\Local\\Android\\Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86_64,x86",
+        "ideBuildTargetAbi": "x86_64,arm64-v8a",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },

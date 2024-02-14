@@ -15,18 +15,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.quietframe.database.MyDatabase;
 import com.example.quietframe.database.dao.PhotoDao;
+import com.example.quietframe.database.dao.UserDao;
 import com.example.quietframe.database.entity.PhotoEntity;
 import com.example.quietframe.adapter.PhotosAdapter;
 import com.example.quietframe.R;
+import com.example.quietframe.database.entity.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDeleteListener {
     private ViewPager2 viewPager;
+    private TextView welcomeTextView;
     private PhotosAdapter photosAdapter;
     private List<PhotoEntity> photos = new ArrayList<>();
 
@@ -69,6 +73,7 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         viewPager = view.findViewById(R.id.viewPager);
         layoutIndicator = view.findViewById(R.id.layoutIndicator);
+        welcomeTextView = view.findViewById(R.id.welcomeMessage);
 //        viewPager = view.findViewById(R.id.viewPager);
         indicators = new ArrayList<>();
         createIndicators();
@@ -156,11 +161,35 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            setAdapter();
-                            createIndicators();
+                            if (photos.isEmpty()) {
+                                displayWelcomeMessage();
+                            } else {
+                                setAdapter();
+                                createIndicators();
+                            }
                         }
                     });
                 }
+            }
+        }).start();
+    }
+
+    private void displayWelcomeMessage() {
+        MyDatabase myDatabase = MyDatabase.getDatabase(getActivity());
+        UserDao userDao = myDatabase.userDao();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                UserEntity userEntity = userDao.findUserById(userId);
+                String username = userEntity.getUsername();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        viewPager.setVisibility(View.GONE);
+                        layoutIndicator.setVisibility(View.GONE);
+                        welcomeTextView.setText("Welcome, " + username + "!");
+                    }
+                });
             }
         }).start();
     }
@@ -169,29 +198,13 @@ public class HomeFragment extends Fragment implements PhotosAdapter.OnItemDelete
         if (viewPager != null) {
             photosAdapter = new PhotosAdapter(getActivity(), photos);
             viewPager.setAdapter(photosAdapter);
-//            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-//                @Override
-//                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//
-//                }
-//
-//                @Override
-//                public void onPageSelected(int position) {
-//
-//                }
-//
-//                @Override
-//                public void onPageScrollStateChanged(int state) {
-//
-//                }
-//            });
         } else Log.e("VIEW PAGER", "E NULL");
     }
 
 
     @Override
     public void onItemDeleted(int position) {
-// Remove the indicator at the specified position
+        // Remove the indicator at the specified position
         layoutIndicator.removeViewAt(position);
 
         // Create a Handler to run code on the main (UI) thread

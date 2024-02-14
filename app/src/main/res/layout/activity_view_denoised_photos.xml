@@ -27,11 +27,11 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/light_tiffany_blue">
+                android:background="@color/white">
 
                 <ImageView
                     android:id="@+id/imgViewCNN"
-                    android:layout_width="350dp"
+                    android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -82,13 +82,12 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-
                 android:layout_height="wrap_content"
-                android:background="@color/light_tiffany_blue">
+                android:background="@color/white">
 
                 <ImageView
                     android:id="@+id/imgViewTV"
-                    android:layout_width="350dp"
+                    android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -140,11 +139,11 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/light_tiffany_blue">
+                android:background="@color/white">
 
                 <ImageView
                     android:id="@+id/imgViewNLM"
-                    android:layout_width="350dp"
+                    android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -198,11 +197,11 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/light_tiffany_blue">
+                android:background="@color/white">
 
                 <ImageView
                     android:id="@+id/imgViewWavelet"
-                    android:layout_width="350dp"
+                    android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"

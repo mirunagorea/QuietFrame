@@ -5,6 +5,7 @@
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
+        style="@style/CardViewBackground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
@@ -13,9 +14,9 @@
         app:cardElevation="4dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            style="@style/CardViewBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/light_tiffany_blue">
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/imageViewPhoto"
@@ -28,6 +29,7 @@
 
             <TextView
                 android:id="@+id/textViewPhoto"
+                style="@style/TextViewBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_20dp"
@@ -40,6 +42,7 @@
 
             <ImageView
                 android:id="@+id/imageViewDownload"
+                style="@style/DownloadButtonTintBackground"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="@dimen/_20dp"
@@ -48,8 +51,7 @@
                 android:src="@drawable/download"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageViewPhoto"
-                app:tint="@color/color_primary_dark" />
+                app:layout_constraintTop_toBottomOf="@+id/imageViewPhoto" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>

@@ -1,5 +1,6 @@
 package com.example.quietframe.fragments.adapter;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,8 @@ import com.example.quietframe.database.MyDatabase;
 import com.example.quietframe.R;
 import com.example.quietframe.database.dao.UserDao;
 import com.example.quietframe.database.entity.UserEntity;
+
+import org.mindrot.jbcrypt.BCrypt;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -47,20 +50,20 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     UserEntity userEntity = userDao.login(email_username, password);
-                    if (userEntity == null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(LoginActivity.this, "This user does not exist in the database", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    } else {
+                    if (userEntity != null) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.putExtra("ID", userEntity.getId());
                                 startActivity(intent);
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "Incorrect email or password", Toast.LENGTH_LONG).show();
                             }
                         });
                     }
